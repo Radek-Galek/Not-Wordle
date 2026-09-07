@@ -1,26 +1,343 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --paper: #eef1f4;
+  --paper-deep: #e2e7ed;
+  --ink: #12161c;
+  --ink-muted: #5c6570;
+  --tile-border: #b8c0ca;
+  --tile-empty: transparent;
+  --key-bg: #d5dbe3;
+  --key-text: #12161c;
+  --correct: #4c8c5c;
+  --present: #c9a227;
+  --absent: #6b7280;
+  --header-line: #c5ced8;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-background: var(--paper);
+  --color-foreground: var(--ink);
+  --font-sans: var(--font-display);
+  --font-mono: var(--font-tiles);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background:
+    radial-gradient(ellipse 100% 70% at 50% -10%, #ffffff 0%, transparent 50%),
+    linear-gradient(165deg, var(--paper) 0%, var(--paper-deep) 100%);
+  color: var(--ink);
+  font-family: var(--font-tiles), ui-sans-serif, sans-serif;
+  min-height: 100dvh;
+}
+
+/* —— Tiles —— */
+.tile {
+  position: relative;
+  width: min(62px, 14vw);
+  height: min(62px, 14vw);
+  transform-style: preserve-3d;
+  perspective: 600px;
+}
+
+.tile-face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-tiles), ui-sans-serif, sans-serif;
+  font-size: clamp(1.25rem, 5vw, 1.85rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  backface-visibility: hidden;
+  border: 2px solid var(--tile-border);
+  background: var(--tile-empty);
+  color: var(--ink);
+  border-radius: 4px;
+}
+
+.tile-face--back {
+  transform: rotateX(180deg);
+  border-color: transparent;
+  color: #fff;
+}
+
+.tile--filled .tile-face--front {
+  border-color: var(--ink-muted);
+  animation: pop 0.1s ease-out;
+}
+
+.tile--reveal {
+  animation: flip 0.5s ease-in forwards;
+  animation-delay: var(--reveal-delay, 0ms);
+}
+
+.tile--revealed {
+  transform: rotateX(180deg);
+}
+
+.tile-face--correct {
+  background: var(--correct);
+  border-color: var(--correct);
+  color: #fff;
+}
+
+.tile-face--present {
+  background: var(--present);
+  border-color: var(--present);
+  color: #fff;
+}
+
+.tile-face--absent {
+  background: var(--absent);
+  border-color: var(--absent);
+  color: #fff;
+}
+
+@keyframes flip {
+  0% {
+    transform: rotateX(0deg);
+  }
+  50% {
+    transform: rotateX(90deg);
+  }
+  100% {
+    transform: rotateX(180deg);
+  }
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-6px);
+  }
+  40% {
+    transform: translateX(6px);
+  }
+  60% {
+    transform: translateX(-6px);
+  }
+  80% {
+    transform: translateX(6px);
+  }
+}
+
+.shake {
+  animation: shake 0.45s ease;
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: rotateX(180deg) translateY(0);
+  }
+  40% {
+    transform: rotateX(180deg) translateY(-12px);
+  }
+  60% {
+    transform: rotateX(180deg) translateY(4px);
+  }
+}
+
+.bounce-win .tile {
+  animation: bounce 0.55s ease;
+}
+
+.bounce-win .tile:nth-child(1) {
+  animation-delay: 0ms;
+}
+.bounce-win .tile:nth-child(2) {
+  animation-delay: 80ms;
+}
+.bounce-win .tile:nth-child(3) {
+  animation-delay: 160ms;
+}
+.bounce-win .tile:nth-child(4) {
+  animation-delay: 240ms;
+}
+.bounce-win .tile:nth-child(5) {
+  animation-delay: 320ms;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.toast {
+  animation: toast-in 0.18s ease-out;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.brand-rise {
+  animation: rise 0.6s ease-out both;
+}
+
+.board-rise {
+  animation: rise 0.7s 0.08s ease-out both;
+}
+
+.key-rise {
+  animation: rise 0.75s 0.14s ease-out both;
+}
+
+/* —— Keyboard —— */
+.key {
+  display: grid;
+  place-items: center;
+  min-width: clamp(28px, 8vw, 42px);
+  height: clamp(46px, 12vw, 56px);
+  padding: 0 0.35rem;
+  border: none;
+  border-radius: 5px;
+  background: var(--key-bg);
+  color: var(--key-text);
+  font-family: var(--font-tiles), ui-sans-serif, sans-serif;
+  font-size: clamp(0.7rem, 2.4vw, 0.85rem);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.1s ease;
+}
+
+.key:active {
+  transform: scale(0.96);
+}
+
+.key--wide {
+  min-width: clamp(48px, 14vw, 68px);
+  font-size: clamp(0.6rem, 2vw, 0.72rem);
+}
+
+.key--correct {
+  background: var(--correct);
+  color: #fff;
+}
+
+.key--present {
+  background: var(--present);
+  color: #fff;
+}
+
+.key--absent {
+  background: var(--absent);
+  color: #fff;
+}
+
+.new-game-btn {
+  animation: rise 0.35s ease-out;
+}
+
+/* —— Modes —— */
+.mode-picker {
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+}
+
+.mode-tab {
+  color: var(--ink-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.mode-tab:hover {
+  color: var(--ink);
+}
+
+.mode-tab--active {
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 12%, transparent);
+}
+
+/* —— Hints —— */
+.hint-btn {
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  cursor: pointer;
+  transition: transform 0.1s ease, brightness 0.15s ease;
+}
+
+.hint-btn:hover {
+  filter: brightness(1.08);
+}
+
+.hint-btn:active {
+  transform: scale(0.97);
+}
+
+.hint-btn--ghost {
+  background: transparent;
+  color: var(--ink);
+  border: 1.5px solid color-mix(in srgb, var(--ink) 22%, transparent);
+}
+
+.hints-panel {
+  background: color-mix(in srgb, #fff 72%, var(--paper-deep));
+  border: 1px solid var(--header-line);
+  animation: rise 0.25s ease-out;
+}
+
+.hint-chip {
+  display: inline-grid;
+  place-items: center;
+  min-width: 4.4rem;
+  padding: 0.4rem 0.55rem;
+  border-radius: 4px;
+  border: 1.5px solid var(--tile-border);
+  background: #fff;
+  color: var(--ink);
+  font-family: var(--font-tiles), ui-sans-serif, sans-serif;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition:
+    border-color 0.12s ease,
+    background 0.12s ease,
+    transform 0.1s ease;
+}
+
+.hint-chip:hover {
+  border-color: var(--ink-muted);
+  background: color-mix(in srgb, var(--present) 18%, #fff);
+}
+
+.hint-chip:active {
+  transform: scale(0.96);
 }
