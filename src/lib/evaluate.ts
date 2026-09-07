@@ -1,3 +1,6 @@
+import type { Lang } from "./i18n";
+import { foldLetter } from "./words";
+
 export type LetterStatus = "correct" | "present" | "absent";
 
 /** Wordle-accurate evaluation (handles duplicate letters correctly). */
@@ -6,8 +9,8 @@ export function evaluateGuess(
   answer: string,
   locale = "en",
 ): LetterStatus[] {
-  const g = guess.toLocaleLowerCase(locale).split("");
-  const a = answer.toLocaleLowerCase(locale).split("");
+  const g = [...guess.toLocaleLowerCase(locale)];
+  const a = [...answer.toLocaleLowerCase(locale)];
   const result: LetterStatus[] = Array(5).fill("absent");
   const remaining = [...a];
 
@@ -34,7 +37,7 @@ export function mergeKeyStatuses(
   current: Record<string, LetterStatus>,
   guess: string,
   statuses: LetterStatus[],
-  locale = "en",
+  lang: Lang = "en",
 ): Record<string, LetterStatus> {
   const rank: Record<LetterStatus, number> = {
     absent: 0,
@@ -42,12 +45,21 @@ export function mergeKeyStatuses(
     correct: 2,
   };
   const next = { ...current };
-  for (let i = 0; i < guess.length; i++) {
-    const letter = guess[i].toLocaleLowerCase(locale);
-    const status = statuses[i];
+  const letters = [...guess.toLocaleLowerCase(lang)];
+
+  const apply = (letter: string, status: LetterStatus) => {
     if (!next[letter] || rank[status] > rank[next[letter]]) {
       next[letter] = status;
     }
+  };
+
+  for (let i = 0; i < letters.length; i++) {
+    const letter = letters[i];
+    const status = statuses[i];
+    apply(letter, status);
+    // Polish keyboard has no diacritic keys — colour the ASCII twin too
+    const folded = foldLetter(letter, lang);
+    if (folded !== letter) apply(folded, status);
   }
   return next;
 }

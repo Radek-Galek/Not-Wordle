@@ -5,7 +5,6 @@ import {
   HINT_MAX_SHUFFLES,
   HINT_SAMPLE_SIZE,
   HINT_UNLOCK_GUESSES,
-  HINT_UNLOCK_MS,
 } from "@/lib/coach";
 import {
   evaluateGuess,
@@ -23,6 +22,7 @@ import {
   normalizeWord,
   pickAnswer,
   resolveForcedAnswer,
+  resolveGuess,
   WORD_LENGTH,
 } from "@/lib/words";
 import { Board } from "./Board";
@@ -68,33 +68,19 @@ export function Game() {
   const [hintWords, setHintWords] = useState<string[]>([]);
   const [hintRemaining, setHintRemaining] = useState(0);
   const [shufflesLeft, setShufflesLeft] = useState(HINT_MAX_SHUFFLES);
-  const [roundStartedAt, setRoundStartedAt] = useState(() => Date.now());
-  const [now, setNow] = useState(() => Date.now());
   const messageTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const t = UI[lang];
 
   const wrongGuesses = guesses.length;
   const hintsUnlocked =
-    mode === "coach" &&
-    (wrongGuesses >= HINT_UNLOCK_GUESSES ||
-      now - roundStartedAt >= HINT_UNLOCK_MS);
+    mode === "coach" && wrongGuesses >= HINT_UNLOCK_GUESSES;
 
   const lockReason = useMemo(() => {
     if (hintsUnlocked) return null;
     const guessesLeft = Math.max(0, HINT_UNLOCK_GUESSES - wrongGuesses);
-    const secondsLeft = Math.max(
-      0,
-      Math.ceil((HINT_UNLOCK_MS - (now - roundStartedAt)) / 1000),
-    );
-    return `${t.hintsUnlockGuesses(guessesLeft)} · ${t.hintsUnlockTimer(secondsLeft)}`;
-  }, [hintsUnlocked, now, roundStartedAt, t, wrongGuesses]);
-
-  useEffect(() => {
-    if (mode !== "coach" || status !== "playing" || hintsUnlocked) return;
-    const id = window.setInterval(() => setNow(Date.now()), 250);
-    return () => window.clearInterval(id);
-  }, [hintsUnlocked, mode, status]);
+    return t.hintsUnlockGuesses(guessesLeft);
+  }, [hintsUnlocked, t, wrongGuesses]);
 
   useEffect(() => {
     const stored = readStoredLang();
@@ -107,6 +93,7 @@ export function Game() {
     const sample = sampleHints(stored, [], [], HINT_SAMPLE_SIZE);
     setHintWords(sample.words);
     setHintRemaining(sample.remaining);
+    setShufflesLeft(HINT_MAX_SHUFFLES);
   }, []);
 
   const flash = useCallback((text: string, ms = 1600) => {
@@ -141,9 +128,8 @@ export function Game() {
     setRevealingRow(null);
     setHintsOpen(false);
     setShufflesLeft(HINT_MAX_SHUFFLES);
-    const started = Date.now();
-    setRoundStartedAt(started);
-    setNow(started);
+    setHintWords([]);
+    setHintRemaining(0);
   }, []);
 
   const changeLang = useCallback(
@@ -180,14 +166,20 @@ export function Game() {
       return;
     }
 
-    if (!isValidGuess(current, lang)) {
+    if (!isValidGuess(current, lang, answer)) {
       flash(t.notInList);
       setShake(true);
       setTimeout(() => setShake(false), 500);
       return;
     }
 
-    const guess = normalizeWord(current, lang);
+    const guess = resolveGuess(current, lang, answer);
+    if (!guess) {
+      flash(t.notInList);
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
+      return;
+    }
 
     if (mode === "hard") {
       const hard = isHardModeCompliant(guess, guesses, evaluations, lang);

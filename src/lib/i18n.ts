@@ -15,7 +15,6 @@ export type UiCopy = {
   hideHints: string;
   hintsLocked: string;
   hintsUnlockGuesses: (n: number) => string;
-  hintsUnlockTimer: (seconds: number) => string;
   shuffle: string;
   shuffleDone: string;
   hintsEmpty: string;
@@ -46,9 +45,7 @@ export const UI: Record<Lang, UiCopy> = {
     hintsUnlockGuesses: (n) =>
       n <= 0
         ? "Hints ready"
-        : `${n} more wrong guess${n === 1 ? "" : "es"} · or wait`,
-    hintsUnlockTimer: (seconds) =>
-      seconds <= 0 ? "Hints ready" : `or ${seconds}s`,
+        : `${n} more guess${n === 1 ? "" : "es"} first`,
     shuffle: "Shuffle",
     shuffleDone: "No shuffles",
     hintsEmpty: "No candidates left — keep guessing.",
@@ -77,9 +74,7 @@ export const UI: Record<Lang, UiCopy> = {
     hintsUnlockGuesses: (n) =>
       n <= 0
         ? "Hinty gotowe"
-        : `Jeszcze ${n} złe ${n === 1 ? "hasło" : n < 5 ? "hasła" : "haseł"} · lub czekaj`,
-    hintsUnlockTimer: (seconds) =>
-      seconds <= 0 ? "Hinty gotowe" : `lub ${seconds}s`,
+        : `Najpierw ${n} ${n === 1 ? "hasło" : "hasła"}`,
     shuffle: "Losuj",
     shuffleDone: "Koniec losowań",
     hintsEmpty: "Brak kandydatów — zgaduj dalej.",
