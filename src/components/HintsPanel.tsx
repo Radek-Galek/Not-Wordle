@@ -47,7 +47,7 @@ export function HintsPanel({
       </button>
 
       {!unlocked && lockReason && (
-        <p className="mt-1 text-center text-[10px] text-[var(--ink-muted)]">
+        <p className="hints-lock-msg px-3 text-center text-[10px] leading-snug text-[var(--ink-muted)]">
           {lockReason}
         </p>
       )}
