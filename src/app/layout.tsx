@@ -15,7 +15,7 @@ const tiles = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Five",
+  title: "R3-DLE",
   description: "Unlimited five-letter word game. English & Polish. No ads.",
 };
 

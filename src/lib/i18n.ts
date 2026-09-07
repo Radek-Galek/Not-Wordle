@@ -27,7 +27,7 @@ export type UiCopy = {
 
 export const UI: Record<Lang, UiCopy> = {
   en: {
-    brand: "Five",
+    brand: "R3-DLE",
     modes: {
       classic: "Classic",
       coach: "Coach",
@@ -50,7 +50,7 @@ export const UI: Record<Lang, UiCopy> = {
     hardMustUse: (letter) => `Must use ${letter}`,
   },
   pl: {
-    brand: "Five",
+    brand: "R3-DLE",
     modes: {
       classic: "Klasyczny",
       coach: "Trener",

@@ -29,7 +29,7 @@ export function HintsPanel({
   const t = UI[lang];
 
   return (
-    <div className="hints-dock relative flex justify-center">
+    <div className="hints-dock">
       <button
         type="button"
         onClick={onToggle}
