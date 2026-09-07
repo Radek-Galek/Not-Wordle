@@ -1,10 +1,12 @@
 "use client";
 
-import { MAX_GUESSES, WORD_LENGTH } from "@/lib/words";
 import type { LetterStatus } from "@/lib/evaluate";
+import type { Lang } from "@/lib/i18n";
+import { MAX_GUESSES, WORD_LENGTH } from "@/lib/words";
 import { Tile } from "./Tile";
 
 type BoardProps = {
+  lang: Lang;
   guesses: string[];
   evaluations: LetterStatus[][];
   current: string;
@@ -14,6 +16,7 @@ type BoardProps = {
 };
 
 export function Board({
+  lang,
   guesses,
   evaluations,
   current,
@@ -23,7 +26,7 @@ export function Board({
 }: BoardProps) {
   const rows = Array.from({ length: MAX_GUESSES }, (_, row) => {
     const isCurrent = row === guesses.length;
-    const guess = isCurrent ? current : guesses[row] ?? "";
+    const guessChars = [...(isCurrent ? current : (guesses[row] ?? ""))];
     const evaluation = evaluations[row];
     const isRevealing = revealingRow === row;
     const isShaking = shake && isCurrent;
@@ -32,15 +35,16 @@ export function Board({
     return (
       <div
         key={row}
-        className={`board-row flex gap-1.5 ${isShaking ? "shake" : ""} ${isBounce ? "bounce-win" : ""}`}
+        className={`board-row flex ${isShaking ? "shake" : ""} ${isBounce ? "bounce-win" : ""}`}
       >
         {Array.from({ length: WORD_LENGTH }, (_, col) => {
-          const letter = guess[col] ?? "";
+          const letter = guessChars[col] ?? "";
           const status = evaluation?.[col];
           return (
             <Tile
               key={col}
               letter={letter}
+              lang={lang}
               status={status}
               revealing={isRevealing}
               delayMs={col * 320}
@@ -52,5 +56,5 @@ export function Board({
     );
   });
 
-  return <div className="flex flex-col gap-1.5">{rows}</div>;
+  return <div className="flex flex-col gap-[var(--tile-gap)]">{rows}</div>;
 }

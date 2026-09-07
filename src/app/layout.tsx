@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Outfit, Archivo_Black } from "next/font/google";
 import "./globals.css";
 
@@ -15,8 +15,15 @@ const tiles = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Endless — unlimited Wordle",
-  description: "Play Wordle as many times as you want. No ads, no daily limit.",
+  title: "Five",
+  description: "Unlimited five-letter word game. English & Polish. No ads.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -25,7 +32,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${display.variable} ${tiles.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col overflow-hidden">{children}</body>
     </html>
   );
 }

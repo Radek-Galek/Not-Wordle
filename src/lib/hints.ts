@@ -1,18 +1,21 @@
 import type { LetterStatus } from "./evaluate";
 import { evaluateGuess } from "./evaluate";
+import type { Lang } from "./i18n";
 import { getAnswers } from "./words";
 
 /** A word is still possible if every past guess would produce the same colors against it. */
 export function getPossibleAnswers(
+  lang: Lang,
   guesses: string[],
   evaluations: LetterStatus[][],
 ): string[] {
-  if (guesses.length === 0) return getAnswers();
+  if (guesses.length === 0) return getAnswers(lang);
 
-  return getAnswers().filter((candidate) =>
+  return getAnswers(lang).filter((candidate) =>
     guesses.every(
       (guess, i) =>
-        evaluateGuess(guess, candidate).join("") === evaluations[i].join(""),
+        evaluateGuess(guess, candidate, lang).join("") ===
+        evaluations[i].join(""),
     ),
   );
 }
@@ -28,12 +31,13 @@ function shuffle<T>(items: T[]): T[] {
 
 /** Up to `count` random remaining candidates. Answer is not forced in. */
 export function sampleHints(
+  lang: Lang,
   guesses: string[],
   evaluations: LetterStatus[][],
   count = 10,
 ): { words: string[]; remaining: number } {
-  const guessed = new Set(guesses.map((g) => g.toLowerCase()));
-  const possible = getPossibleAnswers(guesses, evaluations).filter(
+  const guessed = new Set(guesses);
+  const possible = getPossibleAnswers(lang, guesses, evaluations).filter(
     (w) => !guessed.has(w),
   );
   return {

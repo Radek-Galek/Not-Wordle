@@ -2,12 +2,16 @@
 
 Unlimited Wordle — no ads, no daily limit. Built with Next.js for Vercel.
 
-## Word list
+## Word lists
 
 Bundled locally (no external API):
 
-- **~2,315** answer words (classic Wordle solutions)
-- **~12,972** valid guesses
+| Language | Answers | Valid guesses |
+|----------|---------|---------------|
+| English  | ~2,315  | ~12,972       |
+| Polish   | ~6,000  | ~28,600       |
+
+Polish words come from SJP-based lists (with diacritics: ą ć ę ł ń ó ś ź ż).
 
 ## Develop
 

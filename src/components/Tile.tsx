@@ -2,9 +2,11 @@
 
 import type { CSSProperties } from "react";
 import type { LetterStatus } from "@/lib/evaluate";
+import type { Lang } from "@/lib/i18n";
 
 type TileProps = {
   letter: string;
+  lang: Lang;
   status?: LetterStatus;
   revealing?: boolean;
   delayMs?: number;
@@ -13,6 +15,7 @@ type TileProps = {
 
 export function Tile({
   letter,
+  lang,
   status,
   revealing,
   delayMs = 0,
@@ -22,6 +25,7 @@ export function Tile({
   const filledClass = filled ? "tile--filled" : "";
   const revealedClass = status && !revealing ? "tile--revealed" : "";
   const backStatus = status ? `tile-face--${status}` : "";
+  const display = letter ? letter.toLocaleUpperCase(lang) : "";
 
   return (
     <div
@@ -32,8 +36,8 @@ export function Tile({
           : undefined
       }
     >
-      <span className="tile-face tile-face--front">{letter}</span>
-      <span className={`tile-face tile-face--back ${backStatus}`}>{letter}</span>
+      <span className="tile-face tile-face--front">{display}</span>
+      <span className={`tile-face tile-face--back ${backStatus}`}>{display}</span>
     </div>
   );
 }

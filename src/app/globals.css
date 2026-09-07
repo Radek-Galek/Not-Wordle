@@ -1,18 +1,28 @@
 @import "tailwindcss";
 
+/* Tuned for iPhone 12 Pro Max logical size: 428 × 926 */
 :root {
-  --paper: #eef1f4;
-  --paper-deep: #e2e7ed;
-  --ink: #12161c;
-  --ink-muted: #5c6570;
-  --tile-border: #b8c0ca;
-  --tile-empty: transparent;
-  --key-bg: #d5dbe3;
-  --key-text: #12161c;
-  --correct: #4c8c5c;
-  --present: #c9a227;
-  --absent: #6b7280;
-  --header-line: #c5ced8;
+  --paper: #ffffff;
+  --paper-deep: #f6f7f8;
+  --ink: #1a1a1b;
+  --ink-muted: #787c7e;
+  --tile-border: #d3d6da;
+  --tile-border-filled: #878a8c;
+  --tile-empty: #ffffff;
+  --key-bg: #d3d6da;
+  --key-text: #1a1a1b;
+  --correct: #6aaa64;
+  --present: #c9b458;
+  --absent: #787c7e;
+  --header-line: #d3d6da;
+  /* reserve header + modes + hints + keyboard + 32px bottom pad */
+  --chrome: 280px;
+  --tile: min(62px, 14vw, calc((100dvh - var(--chrome) - var(--safe-t) - var(--safe-b)) / 6.35));
+  --tile-gap: 5px;
+  --key-h: clamp(42px, 5.2dvh, 58px);
+  --footer-pad: 32px;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-t: env(safe-area-inset-top, 0px);
 }
 
 @theme inline {
@@ -22,20 +32,91 @@
   --font-mono: var(--font-tiles);
 }
 
+html,
 body {
-  background:
-    radial-gradient(ellipse 100% 70% at 50% -10%, #ffffff 0%, transparent 50%),
-    linear-gradient(165deg, var(--paper) 0%, var(--paper-deep) 100%);
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: var(--paper);
   color: var(--ink);
   font-family: var(--font-tiles), ui-sans-serif, sans-serif;
   min-height: 100dvh;
 }
 
-/* —— Tiles —— */
-.tile {
+.page-shell {
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+  padding: max(8px, var(--safe-t)) 12px 0;
+}
+
+.game-shell {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 500px;
+  height: 100%;
+  margin: 0 auto;
+  min-height: 0;
+}
+
+.game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-shrink: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--header-line);
+  margin-bottom: 8px;
+}
+
+.game-brand {
+  font-family: var(--font-display), ui-sans-serif, sans-serif;
+  font-size: 1.5rem;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin: 0;
+}
+
+.game-board-wrap {
   position: relative;
-  width: min(62px, 14vw);
-  height: min(62px, 14vw);
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  overflow: hidden;
+  padding: 8px 0;
+  container-type: size;
+}
+
+.game-footer {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding-top: 8px;
+  padding-bottom: max(var(--footer-pad), var(--safe-b));
+  z-index: 5;
+}
+
+/* —— Tiles (Wordle-style) —— */
+.board-row {
+  gap: var(--tile-gap);
+}
+
+.tile {
+  --s: min(var(--tile), calc((100cqi - 24px) / 5), calc((100cqh - 24px) / 6));
+  position: relative;
+  width: var(--s);
+  height: var(--s);
   transform-style: preserve-3d;
   perspective: 600px;
 }
@@ -46,15 +127,15 @@ body {
   display: grid;
   place-items: center;
   font-family: var(--font-tiles), ui-sans-serif, sans-serif;
-  font-size: clamp(1.25rem, 5vw, 1.85rem);
+  font-size: calc(var(--s) * 0.55);
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   backface-visibility: hidden;
   border: 2px solid var(--tile-border);
   background: var(--tile-empty);
   color: var(--ink);
-  border-radius: 4px;
+  border-radius: 0;
 }
 
 .tile-face--back {
@@ -64,7 +145,7 @@ body {
 }
 
 .tile--filled .tile-face--front {
-  border-color: var(--ink-muted);
+  border-color: var(--tile-border-filled);
   animation: pop 0.1s ease-out;
 }
 
@@ -125,16 +206,16 @@ body {
     transform: translateX(0);
   }
   20% {
-    transform: translateX(-6px);
+    transform: translateX(-5px);
   }
   40% {
-    transform: translateX(6px);
+    transform: translateX(5px);
   }
   60% {
-    transform: translateX(-6px);
+    transform: translateX(-5px);
   }
   80% {
-    transform: translateX(6px);
+    transform: translateX(5px);
   }
 }
 
@@ -148,10 +229,10 @@ body {
     transform: rotateX(180deg) translateY(0);
   }
   40% {
-    transform: rotateX(180deg) translateY(-12px);
+    transform: rotateX(180deg) translateY(-10px);
   }
   60% {
-    transform: rotateX(180deg) translateY(4px);
+    transform: rotateX(180deg) translateY(3px);
   }
 }
 
@@ -178,58 +259,50 @@ body {
 @keyframes toast-in {
   from {
     opacity: 0;
-    transform: translateY(6px) scale(0.96);
+    transform: translate(-50%, 4px) scale(0.96);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translate(-50%, 0) scale(1);
   }
 }
 
 .toast {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 20;
+  transform: translateX(-50%);
+  border-radius: 4px;
+  background: var(--ink);
+  color: #fff;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--ink) 25%, transparent);
   animation: toast-in 0.18s ease-out;
-}
-
-@keyframes rise {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.brand-rise {
-  animation: rise 0.6s ease-out both;
-}
-
-.board-rise {
-  animation: rise 0.7s 0.08s ease-out both;
-}
-
-.key-rise {
-  animation: rise 0.75s 0.14s ease-out both;
 }
 
 /* —— Keyboard —— */
 .key {
   display: grid;
   place-items: center;
-  min-width: clamp(28px, 8vw, 42px);
-  height: clamp(46px, 12vw, 56px);
-  padding: 0 0.35rem;
+  min-width: clamp(30px, 8.2vw, 43px);
+  height: var(--key-h);
+  padding: 0 0.3rem;
   border: none;
-  border-radius: 5px;
+  border-radius: 4px;
   background: var(--key-bg);
   color: var(--key-text);
   font-family: var(--font-tiles), ui-sans-serif, sans-serif;
-  font-size: clamp(0.7rem, 2.4vw, 0.85rem);
+  font-size: clamp(0.72rem, 2.4vw, 0.875rem);
   font-weight: 700;
   letter-spacing: 0.02em;
   cursor: pointer;
   user-select: none;
+  -webkit-tap-highlight-color: transparent;
   transition:
     background 0.15s ease,
     color 0.15s ease,
@@ -241,8 +314,14 @@ body {
 }
 
 .key--wide {
-  min-width: clamp(48px, 14vw, 68px);
-  font-size: clamp(0.6rem, 2vw, 0.72rem);
+  min-width: clamp(48px, 13vw, 68px);
+  font-size: clamp(0.58rem, 1.9vw, 0.72rem);
+}
+
+.key--compact {
+  min-width: clamp(24px, 6.8vw, 34px);
+  padding: 0 0.15rem;
+  font-size: clamp(0.65rem, 2.1vw, 0.78rem);
 }
 
 .key--correct {
@@ -264,9 +343,43 @@ body {
   animation: rise 0.35s ease-out;
 }
 
-/* —— Modes —— */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.lang-toggle {
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+  flex-shrink: 0;
+}
+
+.lang-tab {
+  border: none;
+  background: transparent;
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+
+.lang-tab:hover {
+  color: var(--ink);
+}
+
+.lang-tab--active {
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 12%, transparent);
+}
+
 .mode-picker {
   background: color-mix(in srgb, var(--ink) 6%, transparent);
+  flex-shrink: 0;
+  margin-bottom: 4px;
 }
 
 .mode-tab {
@@ -286,13 +399,21 @@ body {
   box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 12%, transparent);
 }
 
-/* —— Hints —— */
+/* —— Hints (absolute overlay) —— */
+.hints-dock {
+  position: relative;
+  z-index: 30;
+  min-height: 28px;
+}
+
 .hint-btn {
   background: var(--ink);
   color: var(--paper);
   border: none;
   cursor: pointer;
-  transition: transform 0.1s ease, brightness 0.15s ease;
+  transition:
+    transform 0.1s ease,
+    filter 0.15s ease;
 }
 
 .hint-btn:hover {
@@ -309,23 +430,43 @@ body {
   border: 1.5px solid color-mix(in srgb, var(--ink) 22%, transparent);
 }
 
+.hints-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  border: none;
+  background: color-mix(in srgb, var(--ink) 28%, transparent);
+  cursor: pointer;
+}
+
 .hints-panel {
-  background: color-mix(in srgb, #fff 72%, var(--paper-deep));
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  z-index: 50;
+  width: min(400px, calc(100vw - 20px));
+  max-height: min(42dvh, 320px);
+  overflow: auto;
+  border-radius: 10px;
+  background: #fff;
   border: 1px solid var(--header-line);
-  animation: rise 0.25s ease-out;
+  padding: 10px;
+  box-shadow: 0 12px 40px color-mix(in srgb, var(--ink) 22%, transparent);
+  animation: rise 0.2s ease-out;
 }
 
 .hint-chip {
   display: inline-grid;
   place-items: center;
-  min-width: 4.4rem;
-  padding: 0.4rem 0.55rem;
+  min-width: 3.6rem;
+  padding: 0.3rem 0.45rem;
   border-radius: 4px;
   border: 1.5px solid var(--tile-border);
   background: #fff;
   color: var(--ink);
   font-family: var(--font-tiles), ui-sans-serif, sans-serif;
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   cursor: pointer;
   transition:
     border-color 0.12s ease,
@@ -340,4 +481,19 @@ body {
 
 .hint-chip:active {
   transform: scale(0.96);
+}
+
+/* Shorter phones / PL keyboard (extra row) */
+@media (max-height: 800px) {
+  :root {
+    --chrome: 300px;
+    --key-h: clamp(36px, 4.6dvh, 48px);
+  }
+}
+
+@media (max-height: 700px) {
+  :root {
+    --chrome: 290px;
+    --key-h: 34px;
+  }
 }
