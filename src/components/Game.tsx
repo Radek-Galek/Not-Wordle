@@ -22,6 +22,7 @@ import {
   MAX_GUESSES,
   normalizeWord,
   pickAnswer,
+  resolveForcedAnswer,
   WORD_LENGTH,
 } from "@/lib/words";
 import { Board } from "./Board";
@@ -38,6 +39,15 @@ function readStoredLang(): Lang {
   if (typeof window === "undefined") return "en";
   const stored = window.localStorage.getItem(LANG_KEY);
   return stored === "pl" || stored === "en" ? stored : "en";
+}
+
+function readForcedWord(): string | null {
+  if (typeof window === "undefined") return null;
+  return new URLSearchParams(window.location.search).get("word");
+}
+
+function nextAnswer(lang: Lang): string {
+  return resolveForcedAnswer(lang, readForcedWord()) ?? pickAnswer(lang);
 }
 
 export function Game() {
@@ -90,7 +100,9 @@ export function Game() {
     const stored = readStoredLang();
     if (stored !== "en") {
       setLang(stored);
-      setAnswer(pickAnswer(stored));
+      setAnswer(nextAnswer(stored));
+    } else {
+      setAnswer(nextAnswer("en"));
     }
     const sample = sampleHints(stored, [], [], HINT_SAMPLE_SIZE);
     setHintWords(sample.words);
@@ -118,7 +130,7 @@ export function Game() {
   );
 
   const startRound = useCallback((nextLang: Lang) => {
-    setAnswer(pickAnswer(nextLang));
+    setAnswer(nextAnswer(nextLang));
     setGuesses([]);
     setEvaluations([]);
     setCurrent("");

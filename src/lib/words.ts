@@ -20,13 +20,31 @@ const DICTS: Record<Lang, Dict> = {
   },
 };
 
+/** Extra answers with boosted pick chance (prank / custom words). */
+const PRANK_WORDS: Partial<Record<Lang, { word: string; chance: number }[]>> = {
+  en: [{ word: "nigga", chance: 0.15 }],
+};
+
 export function getAnswers(lang: Lang): string[] {
   return DICTS[lang].answers;
 }
 
 export function pickAnswer(lang: Lang): string {
+  const pranks = PRANK_WORDS[lang] ?? [];
+  for (const prank of pranks) {
+    if (Math.random() < prank.chance) return prank.word;
+  }
   const list = DICTS[lang].answers;
   return list[Math.floor(Math.random() * list.length)];
+}
+
+/** Force a specific answer when sharing a prank link (?word=radek). */
+export function resolveForcedAnswer(lang: Lang, forced?: string | null): string | null {
+  if (!forced) return null;
+  const word = forced.toLocaleLowerCase(lang).trim();
+  if ([...word].length !== WORD_LENGTH) return null;
+  if (!isValidGuess(word, lang)) return null;
+  return word;
 }
 
 export function isValidGuess(word: string, lang: Lang): boolean {
