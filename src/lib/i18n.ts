@@ -13,7 +13,11 @@ export type UiCopy = {
   newGame: string;
   showHints: string;
   hideHints: string;
+  hintsLocked: string;
+  hintsUnlockGuesses: (n: number) => string;
+  hintsUnlockTimer: (seconds: number) => string;
   shuffle: string;
+  shuffleDone: string;
   hintsEmpty: string;
   hintsCount: (n: number) => string;
   notEnough: string;
@@ -38,9 +42,17 @@ export const UI: Record<Lang, UiCopy> = {
     newGame: "New game",
     showHints: "Hints",
     hideHints: "Close",
+    hintsLocked: "Hints locked",
+    hintsUnlockGuesses: (n) =>
+      n <= 0
+        ? "Hints ready"
+        : `${n} more wrong guess${n === 1 ? "" : "es"} · or wait`,
+    hintsUnlockTimer: (seconds) =>
+      seconds <= 0 ? "Hints ready" : `or ${seconds}s`,
     shuffle: "Shuffle",
+    shuffleDone: "No shuffles",
     hintsEmpty: "No candidates left — keep guessing.",
-    hintsCount: (n) => `${n} still fit · tap to fill`,
+    hintsCount: (n) => `${n} idea${n === 1 ? "" : "s"} · tap to fill`,
     notEnough: "Not enough letters",
     notInList: "Not in word list",
     nice: "Nice!",
@@ -61,9 +73,17 @@ export const UI: Record<Lang, UiCopy> = {
     newGame: "Nowa gra",
     showHints: "Hinty",
     hideHints: "Zamknij",
+    hintsLocked: "Hinty zablokowane",
+    hintsUnlockGuesses: (n) =>
+      n <= 0
+        ? "Hinty gotowe"
+        : `Jeszcze ${n} złe ${n === 1 ? "hasło" : n < 5 ? "hasła" : "haseł"} · lub czekaj`,
+    hintsUnlockTimer: (seconds) =>
+      seconds <= 0 ? "Hinty gotowe" : `lub ${seconds}s`,
     shuffle: "Losuj",
+    shuffleDone: "Koniec losowań",
     hintsEmpty: "Brak kandydatów — zgaduj dalej.",
-    hintsCount: (n) => `${n} pasuje · kliknij`,
+    hintsCount: (n) => `${n} pomysł${n === 1 ? "" : n < 5 ? "y" : "ów"} · kliknij`,
     notEnough: "Za mało liter",
     notInList: "Brak w słowniku",
     nice: "Brawo!",
