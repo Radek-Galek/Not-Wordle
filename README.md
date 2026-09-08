@@ -8,10 +8,10 @@ Bundled locally (no external API):
 
 | Language | Answers | Valid guesses |
 |----------|---------|---------------|
-| English  | ~2,315  | ~12,972       |
-| Polish   | ~6,000  | ~28,600       |
+| English  | ~1,475 (common words only) | ~13k |
+| Polish   | ~2,400 (no inflected plurals/cases) | ~30k |
 
-Polish words come from SJP-based lists (with diacritics: ą ć ę ł ń ó ś ź ż).
+Polish answers drop declined forms (aferą / afery / akcje etc.). You can still type ASCII without diacritics.
 
 ## Develop
 

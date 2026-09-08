@@ -53,7 +53,7 @@ const DICTS: Record<Lang, Dict> = {
 
 /** Extra answers with boosted pick chance (prank / custom words). */
 const PRANK_WORDS: Partial<Record<Lang, { word: string; chance: number }[]>> = {
-  en: [{ word: "nigga", chance: 0.15 }],
+  en: [{ word: "nigga", chance: 0.07 }],
 };
 
 export function foldLetter(letter: string, lang: Lang): string {
