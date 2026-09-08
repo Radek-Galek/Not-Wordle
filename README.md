@@ -9,7 +9,7 @@ Bundled locally (no external API):
 | Language | Answers | Valid guesses |
 |----------|---------|---------------|
 | English  | ~1,475 (common words only) | ~13k |
-| Polish   | ~2,400 (no inflected plurals/cases) | ~30k |
+| Polish   | ~1,550 (common lemmas; no niema-style junk / plurals) | ~30k |
 
 Polish answers drop declined forms (aferą / afery / akcje etc.). You can still type ASCII without diacritics.
 
