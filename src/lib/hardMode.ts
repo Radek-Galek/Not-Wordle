@@ -1,9 +1,11 @@
 import type { LetterStatus } from "./evaluate";
 import type { Lang } from "./i18n";
 import { UI } from "./i18n";
+import { foldWord } from "./words";
 
 /**
  * Official-style hard mode: greens stay put, yellows must be reused somewhere.
+ * Polish compares diacritic-insensitively (same as tile colours).
  */
 export function isHardModeCompliant(
   guess: string,
@@ -14,10 +16,12 @@ export function isHardModeCompliant(
   if (previousGuesses.length === 0) return { ok: true };
 
   const t = UI[lang];
-  const g = guess.toLocaleLowerCase(lang).split("");
+  const norm = (w: string) =>
+    lang === "pl" ? [...foldWord(w, "pl")] : [...w.toLocaleLowerCase(lang)];
+  const g = norm(guess);
 
   for (let row = 0; row < previousGuesses.length; row++) {
-    const prev = previousGuesses[row].toLocaleLowerCase(lang).split("");
+    const prev = norm(previousGuesses[row]);
     const ev = previousEvals[row];
 
     for (let i = 0; i < 5; i++) {
@@ -31,7 +35,7 @@ export function isHardModeCompliant(
   }
 
   for (let row = 0; row < previousGuesses.length; row++) {
-    const prev = previousGuesses[row].toLocaleLowerCase(lang).split("");
+    const prev = norm(previousGuesses[row]);
     const ev = previousEvals[row];
     const used = g.map(() => false);
 

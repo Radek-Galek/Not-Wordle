@@ -1,16 +1,27 @@
 import type { Lang } from "./i18n";
-import { foldLetter } from "./words";
+import { foldLetter, foldWord } from "./words";
 
 export type LetterStatus = "correct" | "present" | "absent";
 
-/** Wordle-accurate evaluation (handles duplicate letters correctly). */
+/**
+ * Wordle-accurate evaluation (handles duplicate letters correctly).
+ * Polish: compares diacritic-insensitively (n/ń, a/ą, …) because the
+ * on-screen keyboard only has ASCII keys.
+ */
 export function evaluateGuess(
   guess: string,
   answer: string,
-  locale = "en",
+  lang: Lang = "en",
 ): LetterStatus[] {
-  const g = [...guess.toLocaleLowerCase(locale)];
-  const a = [...answer.toLocaleLowerCase(locale)];
+  const g =
+    lang === "pl"
+      ? [...foldWord(guess, "pl")]
+      : [...guess.toLocaleLowerCase(lang)];
+  const a =
+    lang === "pl"
+      ? [...foldWord(answer, "pl")]
+      : [...answer.toLocaleLowerCase(lang)];
+
   const result: LetterStatus[] = Array(5).fill("absent");
   const remaining = [...a];
 
@@ -56,10 +67,9 @@ export function mergeKeyStatuses(
   for (let i = 0; i < letters.length; i++) {
     const letter = letters[i];
     const status = statuses[i];
-    apply(letter, status);
-    // Polish keyboard has no diacritic keys — colour the ASCII twin too
-    const folded = foldLetter(letter, lang);
-    if (folded !== letter) apply(folded, status);
+    // Polish: only colour ASCII keys (ń → n), matching folded evaluation
+    const key = foldLetter(letter, lang);
+    apply(key, status);
   }
   return next;
 }
