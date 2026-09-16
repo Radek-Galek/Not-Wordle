@@ -2,10 +2,11 @@ import enAnswers from "@/data/en/answers.json";
 import enValid from "@/data/en/valid.json";
 import plAnswers from "@/data/pl/answers.json";
 import plValid from "@/data/pl/valid.json";
+import { getEnglishExtras } from "./extraWords";
 import type { Lang } from "./i18n";
+import { MAX_GUESSES, WORD_LENGTH } from "./words-constants";
 
-export const WORD_LENGTH = 5;
-export const MAX_GUESSES = 6;
+export { MAX_GUESSES, WORD_LENGTH };
 
 type Dict = {
   answers: string[];
@@ -26,21 +27,6 @@ const PL_FOLD: Record<string, string> = {
   ź: "z",
   ż: "z",
 };
-
-/** Comma-separated 5-letter extras from env, e.g. poopy,bitch,faggy */
-function parseExtraWords(raw: string | undefined): string[] {
-  if (!raw?.trim()) return [];
-  return [
-    ...new Set(
-      raw
-        .split(",")
-        .map((w) => w.trim().toLowerCase())
-        .filter((w) => w.length === WORD_LENGTH),
-    ),
-  ];
-}
-
-const EN_EXTRA = parseExtraWords(process.env.NEXT_PUBLIC_EN_EXTRA_WORDS);
 
 function buildFoldMap(words: string[]): Map<string, string[]> {
   const map = new Map<string, string[]>();
@@ -64,13 +50,20 @@ function makeDict(answers: string[], validList: string[]): Dict {
   };
 }
 
-const enAnswersWithExtra = [...new Set([...(enAnswers as string[]), ...EN_EXTRA])];
-const enValidWithExtra = [...new Set([...(enValid as string[]), ...EN_EXTRA])];
-
 const DICTS: Record<Lang, Dict> = {
-  en: makeDict(enAnswersWithExtra, enValidWithExtra),
+  en: makeDict(enAnswers as string[], enValid as string[]),
   pl: makeDict(plAnswers as string[], plValid as string[]),
 };
+
+function enValidHas(word: string): boolean {
+  return DICTS.en.valid.has(word) || getEnglishExtras().includes(word);
+}
+
+function enAnswersList(): string[] {
+  const extras = getEnglishExtras();
+  if (extras.length === 0) return DICTS.en.answers;
+  return [...new Set([...DICTS.en.answers, ...extras])];
+}
 
 export function foldLetter(letter: string, lang: Lang): string {
   const ch = letter.toLocaleLowerCase(lang);
@@ -85,11 +78,12 @@ export function foldWord(word: string, lang: Lang): string {
 }
 
 export function getAnswers(lang: Lang): string[] {
+  if (lang === "en") return enAnswersList();
   return DICTS[lang].answers;
 }
 
 export function pickAnswer(lang: Lang): string {
-  const list = DICTS[lang].answers;
+  const list = getAnswers(lang);
   return list[Math.floor(Math.random() * list.length)];
 }
 
@@ -114,10 +108,12 @@ export function resolveGuess(
   const normalized = normalizeWord(word, lang);
   if ([...normalized].length !== WORD_LENGTH) return null;
 
-  const dict = DICTS[lang];
-  if (dict.valid.has(normalized)) return normalized;
+  if (lang === "en") {
+    return enValidHas(normalized) ? normalized : null;
+  }
 
-  if (lang !== "pl") return null;
+  const dict = DICTS.pl;
+  if (dict.valid.has(normalized)) return normalized;
 
   const folded = foldWord(normalized, "pl");
   const candidates = dict.foldMap.get(folded) ?? [];
@@ -130,12 +126,15 @@ export function resolveGuess(
   if (answerHits.length === 1) return answerHits[0];
   if (answer && foldWord(answer, "pl") === folded) return answer;
 
-  // Still ambiguous — prefer any single answer-list hit order stably
   if (answerHits.length > 1) return answerHits.sort()[0];
   return candidates.slice().sort()[0];
 }
 
-export function isValidGuess(word: string, lang: Lang, answer?: string): boolean {
+export function isValidGuess(
+  word: string,
+  lang: Lang,
+  answer?: string,
+): boolean {
   return resolveGuess(word, lang, answer) !== null;
 }
 

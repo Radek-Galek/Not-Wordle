@@ -25,6 +25,7 @@ import {
   resolveGuess,
   WORD_LENGTH,
 } from "@/lib/words";
+import { ensureEnglishExtras } from "@/lib/extraWords";
 import { Board } from "./Board";
 import { HintsPanel } from "./HintsPanel";
 import { Keyboard } from "./Keyboard";
@@ -81,6 +82,10 @@ export function Game() {
     const guessesLeft = Math.max(0, HINT_UNLOCK_GUESSES - wrongGuesses);
     return t.hintsUnlockGuesses(guessesLeft);
   }, [hintsUnlocked, t, wrongGuesses]);
+
+  useEffect(() => {
+    void ensureEnglishExtras();
+  }, []);
 
   useEffect(() => {
     const stored = readStoredLang();
@@ -156,7 +161,7 @@ export function Game() {
     refreshHints(lang, [], []);
   }, [lang, refreshHints, startRound]);
 
-  const submit = useCallback(() => {
+  const submit = useCallback(async () => {
     if (status !== "playing" || revealingRow !== null) return;
 
     if ([...current].length < WORD_LENGTH) {
@@ -164,6 +169,10 @@ export function Game() {
       setShake(true);
       setTimeout(() => setShake(false), 500);
       return;
+    }
+
+    if (lang === "en") {
+      await ensureEnglishExtras();
     }
 
     if (!isValidGuess(current, lang, answer)) {

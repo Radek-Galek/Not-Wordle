@@ -24,19 +24,21 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Extra English words
 
-Add custom 5-letter English answers via env (comma-separated):
+Add custom 5-letter English words via env (comma-separated):
 
 ```bash
-NEXT_PUBLIC_EN_EXTRA_WORDS=poopy,bitch,faggy
+EN_EXTRA_WORDS=poopy,bitch,faggy
 ```
 
-Copy `.env.example` → `.env.local` for local use. On Vercel, set the same variable in Project → Settings → Environment Variables, then redeploy.
+Copy `.env.example` → `.env.local` for local use.
+
+**On Vercel:** Project → Settings → Environment Variables → add `EN_EXTRA_WORDS` for Production (and Preview if you want) → **Redeploy**. The game loads extras from `/api/extra-words` at runtime, so they work as guesses even when not baked into the client bundle.
 
 ## Deploy to Vercel
 
 1. Push this repo to GitHub
 2. Import the project in [Vercel](https://vercel.com/new)
-3. Set `NEXT_PUBLIC_EN_EXTRA_WORDS` if you want extras
+3. Set `EN_EXTRA_WORDS` if you want extras (e.g. `poopy,bitch,faggy`)
 4. Deploy — framework preset is Next.js
 
 Or from the CLI:
