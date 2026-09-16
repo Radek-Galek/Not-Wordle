@@ -4,6 +4,9 @@ import plAnswers from "@/data/pl/answers.json";
 import plValid from "@/data/pl/valid.json";
 import type { Lang } from "./i18n";
 
+export const WORD_LENGTH = 5;
+export const MAX_GUESSES = 6;
+
 type Dict = {
   answers: string[];
   answerSet: Set<string>;
@@ -23,6 +26,21 @@ const PL_FOLD: Record<string, string> = {
   ź: "z",
   ż: "z",
 };
+
+/** Comma-separated 5-letter extras from env, e.g. poopy,bitch,faggy */
+function parseExtraWords(raw: string | undefined): string[] {
+  if (!raw?.trim()) return [];
+  return [
+    ...new Set(
+      raw
+        .split(",")
+        .map((w) => w.trim().toLowerCase())
+        .filter((w) => w.length === WORD_LENGTH),
+    ),
+  ];
+}
+
+const EN_EXTRA = parseExtraWords(process.env.NEXT_PUBLIC_EN_EXTRA_WORDS);
 
 function buildFoldMap(words: string[]): Map<string, string[]> {
   const map = new Map<string, string[]>();
@@ -46,14 +64,12 @@ function makeDict(answers: string[], validList: string[]): Dict {
   };
 }
 
-const DICTS: Record<Lang, Dict> = {
-  en: makeDict(enAnswers as string[], enValid as string[]),
-  pl: makeDict(plAnswers as string[], plValid as string[]),
-};
+const enAnswersWithExtra = [...new Set([...(enAnswers as string[]), ...EN_EXTRA])];
+const enValidWithExtra = [...new Set([...(enValid as string[]), ...EN_EXTRA])];
 
-/** Extra answers with boosted pick chance (prank / custom words). */
-const PRANK_WORDS: Partial<Record<Lang, { word: string; chance: number }[]>> = {
-  en: [{ word: "nigga", chance: 0.07 }],
+const DICTS: Record<Lang, Dict> = {
+  en: makeDict(enAnswersWithExtra, enValidWithExtra),
+  pl: makeDict(plAnswers as string[], plValid as string[]),
 };
 
 export function foldLetter(letter: string, lang: Lang): string {
@@ -73,10 +89,6 @@ export function getAnswers(lang: Lang): string[] {
 }
 
 export function pickAnswer(lang: Lang): string {
-  const pranks = PRANK_WORDS[lang] ?? [];
-  for (const prank of pranks) {
-    if (Math.random() < prank.chance) return prank.word;
-  }
   const list = DICTS[lang].answers;
   return list[Math.floor(Math.random() * list.length)];
 }
@@ -130,6 +142,3 @@ export function isValidGuess(word: string, lang: Lang, answer?: string): boolean
 export function normalizeWord(word: string, lang: Lang): string {
   return word.toLocaleLowerCase(lang);
 }
-
-export const WORD_LENGTH = 5;
-export const MAX_GUESSES = 6;
